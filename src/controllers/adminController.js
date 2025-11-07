@@ -18,7 +18,15 @@ exports.registerAdmin = async (req, res, next) => {
       return res
         .status(400)
         .json({ message: "Mobile number already registered" });
-
+    if (role === "primary") {
+      const primaryExists = await Admin.findOne({ role: "primary" });
+      if (primaryExists) {
+        return res.status(400).json({
+          message:
+            "Primary admin already exists. You cannot create another admin.",
+        });
+      }
+    }
     const admin = await Admin.create({ name, mobile, password, role });
 
     res.status(201).json({
@@ -68,7 +76,6 @@ exports.getAllAdmins = async (req, res, next) => {
   }
 };
 
-// ✅ Delete Admin (primary only)
 exports.deleteAdmin = async (req, res, next) => {
   try {
     const deleted = await Admin.findByIdAndDelete(req.params.id);
